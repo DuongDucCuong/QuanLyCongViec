@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký tài khoản</title>
+    <!-- Nhúng thư viện TailwindCSS để tạo giao diện hiện đại, chuyên nghiệp -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Nhúng Google Font Inter cho chữ viết mịn màng và cao cấp -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+<div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-slate-800">Tạo tài khoản</h2>
+        <p class="text-slate-500 mt-2 text-sm">Điền đầy đủ thông tin để tham gia hệ thống</p>
+    </div>
+
+    <!-- Khung hiển thị thông báo lỗi hoặc thành công -->
+    <div id="messageBox" class="hidden mb-6 p-4 rounded-xl text-sm font-medium text-center"></div>
+
+    <form id="registerForm" class="space-y-5">
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Tên đăng nhập</label>
+            <input type="text" id="username" required
+                   class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                   placeholder="Nhập tên tài khoản">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Mật khẩu</label>
+            <input type="password" id="password" required
+                   class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                   placeholder="Nhập mật khẩu bảo mật">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Địa chỉ Email</label>
+            <input type="email" id="email" required
+                   class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                   placeholder="vi-du@gmail.com">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Số điện thoại</label>
+            <input type="tel" id="phoneNumber" required
+                   class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                   placeholder="Nhập số điện thoại liên lạc">
+        </div>
+
+        <button type="submit"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
+            Đăng ký ngay
+        </button>
+    </form>
+
+    <div class="mt-6 text-center text-sm text-slate-600">
+        Đã có tài khoản?
+        <a href="/login.html" class="text-blue-600 hover:underline font-semibold">Đăng nhập tại đây</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+        e.preventDefault(); // Ngăn trang web tải lại mặc định khi submit form
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const email = document.getElementById("email").value;
+        const phoneNumber = document.getElementById("phoneNumber").value;
+        const messageBox = document.getElementById("messageBox");
+
+        // Gọi API Đăng ký ở Backend
+        fetch("/api/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password, email, phoneNumber })
+        })
+            .then(async res => {
+                const data = await res.text();
+                messageBox.classList.remove("hidden", "bg-green-100", "text-green-800", "bg-red-100", "text-red-800");
+
+                if (res.ok) {
+                    // Nếu Backend trả về mã 200 OK (Thành công)
+                    messageBox.classList.add("bg-green-100", "text-green-800");
+                    messageBox.innerText = "🎉 Đăng ký tài khoản thành công! Đang chuyển hướng...";
+                    messageBox.classList.remove("hidden");
+
+                    // Chuyển sang trang Đăng nhập sau 1.5 giây
+                    setTimeout(() => {
+                        window.location.href = "/login.html";
+                    }, 1500);
+                } else {
+                    // Nếu Backend trả về mã lỗi 400 Bad Request
+                    messageBox.classList.add("bg-red-100", "text-red-800");
+                    messageBox.innerText = "❌ Đăng ký thất bại: " + data;
+                    messageBox.classList.remove("hidden");
+                }
+            })
+            .catch(err => {
+                messageBox.classList.remove("hidden");
+                messageBox.classList.add("bg-red-100", "text-red-800");
+                messageBox.innerText = "❌ Lỗi kết nối đến máy chủ!";
+            });
+    });
+</script>
+</body>
+</html>
