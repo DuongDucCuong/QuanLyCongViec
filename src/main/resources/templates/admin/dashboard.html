@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng quan của Sếp - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('admin-dashboard')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Tổng quan hệ thống (Sếp)')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <!-- Stats Grid -->
+                <div class="dashboard-grid">
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statTeams">0</div>
+                            <div class="stat-label">Tổng số nhóm</div>
+                        </div>
+                        <div class="stat-icon primary">👥</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statTasks">0</div>
+                            <div class="stat-label">Tổng công việc giao</div>
+                        </div>
+                        <div class="stat-icon info">📋</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statPendingApproval">0</div>
+                            <div class="stat-label">Báo cáo chờ duyệt</div>
+                        </div>
+                        <div class="stat-icon warning">⏳</div>
+                    </div>
+                </div>
+
+                <!-- Main Section -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Báo cáo chờ phê duyệt từ các Nhóm trưởng</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề công việc</th>
+                                    <th>Nhóm thực hiện</th>
+                                    <th>Trưởng nhóm</th>
+                                    <th>Nội dung báo cáo</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTasksTable">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách báo cáo...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Active Tasks Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Danh sách công việc đang triển khai</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề công việc</th>
+                                    <th>Nhóm thực hiện</th>
+                                    <th>Trạng thái</th>
+                                    <th>Chi tiết việc con</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allTasksTable">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách công việc...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Review Report -->
+    <div id="reviewModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Phê duyệt Báo cáo Công việc</h3>
+                <button onclick="closeReviewModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tên công việc</label>
+                <input type="text" id="modalTaskTitle" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nội dung báo cáo từ Leader</label>
+                <textarea id="modalReportContent" class="form-control" readonly></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nhận xét & Hướng dẫn (nếu có)</label>
+                <textarea id="modalFeedback" class="form-control" placeholder="Nhập nhận xét phê duyệt hoặc lý do từ chối..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button onclick="submitReview(false)" class="btn btn-secondary">Từ chối (Làm lại)</button>
+                <button onclick="submitReview(true)" class="btn btn-primary">Duyệt hoàn thành</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal View Subtasks -->
+    <div id="subtasksModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Chi tiết phân rã công việc con</h3>
+                <button onclick="closeSubtasksModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="table-container">
+                <table class="custom-table" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Tiêu đề việc con</th>
+                            <th>Trạng thái</th>
+                            <th>Báo cáo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subtasksTableBody">
+                        <!-- Ajax load subtasks -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSubtasksModal()" class="btn btn-secondary">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/admin-dashboard.js}"></script>
+</body>
+</html>

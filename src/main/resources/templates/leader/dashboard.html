@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trưởng nhóm - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('leader-dashboard')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Dashboard của Trưởng nhóm')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <!-- Stats Grid -->
+                <div class="dashboard-grid">
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statMembers">0</div>
+                            <div class="stat-label">Thành viên nhóm</div>
+                        </div>
+                        <div class="stat-icon primary">👥</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statTeamTasks">0</div>
+                            <div class="stat-label">Dự án lớn của nhóm</div>
+                        </div>
+                        <div class="stat-icon info">📋</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statPendingReviews">0</div>
+                            <div class="stat-label">Báo cáo nhân viên chờ duyệt</div>
+                        </div>
+                        <div class="stat-icon warning">⏳</div>
+                    </div>
+                </div>
+
+                <!-- Active Projects -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Dự án / Công việc lớn được giao từ Sếp</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề công việc</th>
+                                    <th>Mô tả chi tiết</th>
+                                    <th>Trạng thái nhóm</th>
+                                    <th>Phản hồi của Sếp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderBigTasksTable">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách công việc của nhóm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pending Member Reports -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Báo cáo tiến độ từ Nhân viên nhóm</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th>Công việc con</th>
+                                    <th>Dự án lớn</th>
+                                    <th>Báo cáo gửi lên</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memberPendingReportsTable">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách báo cáo nhân viên...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Review Subtask -->
+    <div id="reviewSubtaskModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Phê duyệt báo cáo nhân viên</h3>
+                <button onclick="closeReviewSubtaskModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tên công việc con</label>
+                <input type="text" id="modalSubtaskTitle" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nội dung báo cáo của nhân viên</label>
+                <textarea id="modalSubtaskReport" class="form-control" readonly></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nhận xét, góp ý</label>
+                <textarea id="modalSubtaskFeedback" class="form-control" placeholder="Nhập phản hồi phê duyệt hoặc lý do yêu cầu sửa đổi..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button onclick="submitSubtaskReview(false)" class="btn btn-secondary">Yêu cầu sửa đổi (Reject)</button>
+                <button onclick="submitSubtaskReview(true)" class="btn btn-primary">Duyệt hoàn thành (Approve)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/leader-dashboard.js}"></script>
+</body>
+</html>

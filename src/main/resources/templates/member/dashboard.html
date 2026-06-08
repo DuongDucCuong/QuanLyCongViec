@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhân viên - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('member-dashboard')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Dashboard Nhân viên')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <!-- Stats Grid -->
+                <div class="dashboard-grid">
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statMyTasks">0</div>
+                            <div class="stat-label">Tổng việc được giao</div>
+                        </div>
+                        <div class="stat-icon primary">📋</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statDoingTasks">0</div>
+                            <div class="stat-label">Công việc đang làm</div>
+                        </div>
+                        <div class="stat-icon info">⚡</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div>
+                            <div class="stat-value" id="statApprovedTasks">0</div>
+                            <div class="stat-label">Công việc đã hoàn thành</div>
+                        </div>
+                        <div class="stat-icon success">✅</div>
+                    </div>
+                </div>
+
+                <!-- My Tasks Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Danh sách công việc của bạn</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề công việc</th>
+                                    <th>Mô tả yêu cầu</th>
+                                    <th>Trưởng nhóm giao</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memberTasksTable">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách công việc...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Submit Subtask Report -->
+    <div id="submitSubtaskReportModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Nộp báo cáo hoàn thành công việc</h3>
+                <button onclick="closeSubmitSubtaskReportModal()" class="modal-close">&times;</button>
+            </div>
+            <input type="hidden" id="reportSubtaskId">
+            <div class="form-group">
+                <label class="form-label">Tên công việc</label>
+                <input type="text" id="reportSubtaskTitle" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="reportContentInput">Nội dung báo cáo kết quả</label>
+                <textarea id="reportContentInput" class="form-control" placeholder="Nhập báo cáo chi tiết sản phẩm / kết quả công việc đã hoàn tất..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSubmitSubtaskReportModal()" class="btn btn-secondary">Hủy</button>
+                <button onclick="submitSubtaskReport()" class="btn btn-primary">Gửi báo cáo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/member-dashboard.js}"></script>
+</body>
+</html>

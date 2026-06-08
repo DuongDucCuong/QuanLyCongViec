@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao việc lớn - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('admin-task')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Giao Công việc cho Nhóm')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <div class="card-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">Các dự án / công việc lớn đã giao</h2>
+                    <button onclick="openCreateTaskModal()" class="btn btn-primary">+ Giao việc mới</button>
+                </div>
+
+                <!-- Tasks Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề công việc</th>
+                                    <th>Mô tả chi tiết</th>
+                                    <th>Nhóm thực hiện</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách công việc...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Create Task -->
+    <div id="createTaskModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Giao công việc cho Nhóm</h3>
+                <button onclick="closeCreateTaskModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="taskTitle">Tiêu đề công việc</label>
+                <input type="text" id="taskTitle" class="form-control" placeholder="Ví dụ: Thiết kế giao diện Dashboard">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="taskDescription">Mô tả chi tiết yêu cầu</label>
+                <textarea id="taskDescription" class="form-control" placeholder="Nhập mô tả cụ thể về kết quả mong đợi..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="taskTeamSelect">Giao cho Nhóm thực hiện</label>
+                <select id="taskTeamSelect" class="form-control">
+                    <option value="">-- Chọn nhóm nhận việc --</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeCreateTaskModal()" class="btn btn-secondary">Hủy</button>
+                <button onclick="submitCreateTask()" class="btn btn-primary">Giao việc</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/admin-dashboard.js}"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao việc con & Báo cáo - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('leader-task')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Phân việc con & Báo cáo công việc')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <!-- Step 1: Chọn công việc lớn -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">Bước 1: Chọn một công việc lớn để điều phối và báo cáo</h2>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã việc</th>
+                                    <th>Tiêu đề việc lớn</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác điều phối</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderBigTasksSelectorTable">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách việc lớn...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Step 2: Quản lý việc con của công việc lớn được chọn (Ẩn mặc định, chỉ hiện khi Click chọn) -->
+                <div id="subtaskManagementSection" class="card" style="display: none; margin-bottom: 2rem;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 class="card-title">Bước 2: Phân việc con cho công việc: <span id="activeParentTaskTitle" style="color: var(--primary);">N/A</span></h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button onclick="openCreateSubtaskModal()" class="btn btn-primary btn-sm">+ Giao việc con</button>
+                            <button onclick="openSubmitTeamReportModal()" class="btn btn-primary btn-sm" style="background-color: var(--success); hover:background-color:#047857;">✍️ Nộp báo cáo lên Sếp</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Tiêu đề việc con</th>
+                                    <th>Mô tả việc con</th>
+                                    <th>Nhân viên thực hiện</th>
+                                    <th>Trạng thái</th>
+                                    <th>Nhận xét & Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subtasksTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Chưa có việc con nào được chia. Hãy bấm nút giao việc con ở trên!</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Create Subtask -->
+    <div id="createSubtaskModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Giao việc con cho Nhân viên</h3>
+                <button onclick="closeCreateSubtaskModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="subtaskTitle">Tiêu đề việc con</label>
+                <input type="text" id="subtaskTitle" class="form-control" placeholder="Ví dụ: Thiết kế cơ sở dữ liệu">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="subtaskDescription">Mô tả công việc chi tiết</label>
+                <textarea id="subtaskDescription" class="form-control" placeholder="Nhập mô tả cụ thể về kết quả mong đợi..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="subtaskEmployeeSelect">Giao cho nhân viên trong nhóm</label>
+                <select id="subtaskEmployeeSelect" class="form-control">
+                    <option value="">-- Chọn nhân viên thực hiện --</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeCreateSubtaskModal()" class="btn btn-secondary">Hủy</button>
+                <button onclick="submitCreateSubtask()" class="btn btn-primary">Giao việc</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Submit Team Report to Boss -->
+    <div id="submitTeamReportModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Nộp báo cáo công việc lên Sếp</h3>
+                <button onclick="closeSubmitTeamReportModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nội dung báo cáo kết quả của cả nhóm</label>
+                <textarea id="teamReportContent" class="form-control" placeholder="Nhập tóm tắt kết quả công việc nhóm đã hoàn thành..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeSubmitTeamReportModal()" class="btn btn-secondary">Hủy</button>
+                <button onclick="submitTeamReport()" class="btn btn-primary" style="background-color: var(--success);">Nộp báo cáo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/leader-dashboard.js}"></script>
+</body>
+</html>

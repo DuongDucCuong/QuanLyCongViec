@@ -1,5 +1,6 @@
 package com.quanlycongviec.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
@@ -26,6 +27,12 @@ public class User {
     @Column(nullable = false)
     private String role = "ROLE_USER"; // Mặc định tự đăng ký là tài khoản Nhân viên (ROLE_USER)
 
+    // Liên kết với Nhóm làm việc
+    @ManyToOne
+    @JoinColumn(name = "team_id")
+    @JsonIgnoreProperties({"members", "leader"})
+    private Team team;
+
     public User() {}
 
     public User(String username, String password, String email, String phoneNumber, String role) {
@@ -49,4 +56,6 @@ public class User {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public Team getTeam() { return team; }
+    public void setTeam(Team team) { this.team = team; }
 }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý thành viên nhóm - Quản lý Công việc</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div th:replace="~{layout/fragments :: sidebar('leader-team')}"></div>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Header -->
+            <div th:replace="~{layout/fragments :: header('Quản lý nhân viên nhóm')}"></div>
+
+            <!-- Content Body -->
+            <main class="content-body">
+                <!-- Alert Box -->
+                <div id="alertBox" class="alert-box"></div>
+
+                <div class="card-header" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">Thành viên thuộc nhóm của bạn: <span id="teamLabelName" style="color: var(--primary);">Đang tải...</span></h2>
+                    <button onclick="openAddMemberModal()" class="btn btn-primary">+ Thêm nhân viên vào nhóm</button>
+                </div>
+
+                <!-- Members Table -->
+                <div class="card">
+                    <div class="table-container">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã NV</th>
+                                    <th>Tên tài khoản</th>
+                                    <th>Địa chỉ Email</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Vai trò</th>
+                                </tr>
+                            </thead>
+                            <tbody id="membersTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-secondary);">Đang tải danh sách thành viên...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <div th:replace="~{layout/fragments :: footer}"></div>
+        </div>
+    </div>
+
+    <!-- Modal Add Member -->
+    <div id="addMemberModal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Thêm Nhân viên vào nhóm</h3>
+                <button onclick="closeAddMemberModal()" class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="memberSelect">Chọn Nhân viên tự do (Chưa có nhóm)</label>
+                <select id="memberSelect" class="form-control">
+                    <option value="">-- Chọn nhân viên --</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeAddMemberModal()" class="btn btn-secondary">Hủy</button>
+                <button onclick="submitAddMember()" class="btn btn-primary">Thêm vào nhóm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script th:src="@{/js/app.js}"></script>
+    <!-- Page JS -->
+    <script th:src="@{/js/leader-dashboard.js}"></script>
+</body>
+</html>

@@ -33,16 +33,19 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Tắt chống giả mạo CSRF vì chúng ta dùng REST API + JWT
                 .authorizeHttpRequests(auth -> auth
-                        // Cấu hình các đường dẫn công khai (Ai cũng truy cập được để đăng ký/đăng nhập)
+                        // Cấu hình các đường dẫn công khai
                         .requestMatchers(
                                 "/",
                                 "/api/auth/**",
-                                "/login.html",
-                                "/register.html",
+                                "/login",
+                                "/register",
+                                "/admin/**",
+                                "/leader/**",
+                                "/member/**",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()
-                        // Tất cả các đường dẫn khác bắt buộc phải đăng nhập thành công mới được vào
+                        // Tất cả các API REST và các đường dẫn khác bắt buộc phải đăng nhập bằng JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
