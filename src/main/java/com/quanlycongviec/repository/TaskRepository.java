@@ -22,4 +22,7 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
 
     // Tìm các công việc do một người dùng tạo ra
     List<Task> findByCreatedBy(User user);
+
+    // THÊM PHƯƠNG THỨC NÀY: Tìm công việc theo ID của dự án
+    List<Task> findByProjectId(Integer projectId);
 }

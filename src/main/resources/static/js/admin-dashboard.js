@@ -1,25 +1,28 @@
-// Gọi khi trang load
+let isEditMode = false;
+
+// 1. TỰ ĐỘNG CHẠY KHI TẢI TRANG
+// Tùy thuộc vào đường dẫn URL hiện tại của Admin, code sẽ gọi đúng hàm tải dữ liệu
 document.addEventListener("DOMContentLoaded", function() {
     const path = window.location.pathname;
 
     if (path.includes("/admin/dashboard")) {
-        loadDashboardStats();
-        loadPendingReports();
-        loadAllTasks();
+        loadDashboardStats();    // Tải số liệu tổng quan
+        loadPendingReports();    // Tải danh sách báo cáo chờ duyệt
+        loadAllTasks();          // Tải toàn bộ công việc đang chạy
     } else if (path.includes("/admin/team")) {
-        loadTeams();
-        loadAvailableLeadersDropdown();
+        loadTeams();                     // Tải danh sách các nhóm
+        loadAvailableLeadersDropdown();  // Tải danh sách Trưởng nhóm để chuẩn bị gán
     } else if (path.includes("/admin/task")) {
-        loadBossTasks();
-        loadTeamsDropdown();
+        loadBossTasks();         // Tải danh sách công việc lớn kèm bộ lọc
+        loadTeamsDropdown();     // Tải danh sách nhóm đưa vào Form giao việc
     }
 });
 
-// ==========================================
-// 1. TẢI DỮ LIỆU ĐỔ VÀO VIEW
-// ==========================================
+// =========================================================================
+// SECTION A: LOGIC CHO TRANG DASHBOARD (TỔNG QUAN HỆ THỐNG)
+// =========================================================================
 
-// Tải số liệu thống kê Dashboard
+// Tải số liệu thống kê đổ vào các thẻ Card ở trang chủ Admin
 function loadDashboardStats() {
     fetchWithAuth("/api/admin/teams")
         .then(res => res.json())
@@ -36,7 +39,7 @@ function loadDashboardStats() {
         });
 }
 
-// Tải danh sách báo cáo chờ duyệt
+// Tải danh sách báo cáo mà các nhóm nộp lên chờ duyệt
 function loadPendingReports() {
     fetchWithAuth("/api/admin/tasks")
         .then(res => res.json())
@@ -69,7 +72,7 @@ function loadPendingReports() {
         });
 }
 
-// Tải toàn bộ công việc đang chạy
+// Tải danh sách tất cả các công việc trong hệ thống
 function loadAllTasks() {
     fetchWithAuth("/api/admin/tasks")
         .then(res => res.json())
@@ -99,7 +102,11 @@ function loadAllTasks() {
         });
 }
 
-// Tải danh sách nhóm (admin/team.html)
+// =========================================================================
+// SECTION B: LOGIC CHO TRANG QUẢN LÝ NHÓM (TEAM) - CODE BỊ THIẾU CỦA BẠN NẰM Ở ĐÂY
+// =========================================================================
+
+// Tải danh sách nhóm hiển thị lên bảng
 function loadTeams() {
     fetchWithAuth("/api/admin/teams")
         .then(res => res.json())
@@ -130,46 +137,14 @@ function loadTeams() {
         });
 }
 
-// Tải danh sách công việc của sếp (admin/task.html)
-function loadBossTasks() {
-    fetchWithAuth("/api/admin/tasks")
-        .then(res => res.json())
-        .then(tasks => {
-            const tbody = document.getElementById("tasksTableBody");
-            tbody.innerHTML = "";
-
-            if (tasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Chưa giao dự án/công việc nào.</td></tr>`;
-                return;
-            }
-
-            tasks.forEach(t => {
-                const teamName = t.assignedTeam ? t.assignedTeam.name : "N/A";
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>#${t.id}</strong></td>
-                    <td><strong>${t.title}</strong></td>
-                    <td>${t.description || "N/A"}</td>
-                    <td><span class="badge badge-doing">${teamName}</span></td>
-                    <td><span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-}
-
-// ==========================================
-// 2. DROPDOWNS & MODAL HANDLERS
-// ==========================================
-
+// Tải danh sách nhân viên để chọn làm Trưởng nhóm
 function loadAvailableLeadersDropdown() {
     fetchWithAuth("/api/admin/teams/available-leaders")
         .then(res => res.json())
         .then(users => {
             const selectCreate = document.getElementById("teamLeaderSelect");
             const selectAssign = document.getElementById("leaderSelect");
-            
-            // Xóa cũ, giữ option mặc định
+
             selectCreate.innerHTML = `<option value="">-- Chọn trưởng nhóm --</option>`;
             selectAssign.innerHTML = `<option value="">-- Chọn trưởng nhóm mới --</option>`;
 
@@ -181,23 +156,7 @@ function loadAvailableLeadersDropdown() {
         });
 }
 
-function loadTeamsDropdown() {
-    fetchWithAuth("/api/admin/teams")
-        .then(res => res.json())
-        .then(teams => {
-            const select = document.getElementById("taskTeamSelect");
-            select.innerHTML = `<option value="">-- Chọn nhóm nhận việc --</option>`;
-            teams.forEach(t => {
-                if (t.leader) {
-                    select.insertAdjacentHTML("beforeend", `<option value="${t.id}">${t.name} (Leader: ${t.leader.username})</option>`);
-                } else {
-                    select.insertAdjacentHTML("beforeend", `<option value="${t.id}">${t.name} (Chưa có Leader)</option>`);
-                }
-            });
-        });
-}
-
-// Tạo Nhóm mới
+// Bật/tắt Modal tạo Nhóm mới
 function openCreateTeamModal() {
     loadAvailableLeadersDropdown();
     document.getElementById("createTeamModal").classList.add("open");
@@ -218,19 +177,19 @@ function submitCreateTeam() {
         method: "POST",
         body: JSON.stringify({ name, leaderUsername })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Tạo nhóm thành công!");
-            closeCreateTeamModal();
-            loadTeams();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", "Tạo nhóm thành công!");
+                closeCreateTeamModal();
+                loadTeams();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Bổ nhiệm Leader
+// Bật/tắt Modal bổ nhiệm Trưởng nhóm mới cho Nhóm
 function openAssignLeaderModal(teamId, teamName) {
     document.getElementById("assignTeamId").value = teamId;
     document.getElementById("assignTeamName").value = teamName;
@@ -253,53 +212,226 @@ function submitAssignLeader() {
         method: "PUT",
         body: JSON.stringify({ leaderUsername })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Bổ nhiệm Trưởng nhóm mới thành công!");
-            closeAssignLeaderModal();
-            loadTeams();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", "Bổ nhiệm Trưởng nhóm mới thành công!");
+                closeAssignLeaderModal();
+                loadTeams();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Giao việc lớn
+// =========================================================================
+// SECTION C: LOGIC CHO TRANG QUẢN LÝ CÔNG VIỆC (TASK)
+// =========================================================================
+
+// Tải danh sách nhóm đổ vào ô chọn khi giao việc
+function loadTeamsDropdown() {
+    fetchWithAuth("/api/admin/teams")
+        .then(res => res.json())
+        .then(teams => {
+            const select = document.getElementById("taskTeamSelect");
+            select.innerHTML = `<option value="">-- Chọn nhóm nhận việc --</option>`;
+            teams.forEach(t => {
+                if (t.leader) {
+                    select.insertAdjacentHTML("beforeend", `<option value="${t.id}">${t.name} (Leader: ${t.leader.username})</option>`);
+                } else {
+                    select.insertAdjacentHTML("beforeend", `<option value="${t.id}">${t.name} (Chưa có Leader)</option>`);
+                }
+            });
+        });
+}
+
+// Tải danh sách dự án đổ vào ô chọn khi giao việc
+function loadProjectsDropdown(selectedProjectId = "") {
+    fetchWithAuth("/api/admin/projects")
+        .then(res => res.json())
+        .then(projects => {
+            const select = document.getElementById("taskProjectSelect");
+            select.innerHTML = `<option value="">-- Chọn dự án (Không bắt buộc) --</option>`;
+            projects.forEach(p => {
+                const selected = p.id == selectedProjectId ? "selected" : "";
+                select.insertAdjacentHTML("beforeend", `<option value="${p.id}" ${selected}>${p.name} (${p.status})</option>`);
+            });
+        });
+}
+
+// Tải danh sách công việc lớn của Sếp (hỗ trợ tìm kiếm & lọc động)
+function loadBossTasks() {
+    const projectFilter = document.getElementById("projectFilter");
+    if (projectFilter && projectFilter.options.length <= 1) {
+        fetchWithAuth("/api/admin/projects")
+            .then(res => res.json())
+            .then(projects => {
+                projects.forEach(p => {
+                    projectFilter.insertAdjacentHTML("beforeend", `<option value="${p.id}">${p.name}</option>`);
+                });
+            });
+    }
+
+    fetchWithAuth("/api/admin/tasks")
+        .then(res => res.json())
+        .then(tasks => {
+            const searchQuery = document.getElementById("searchTask").value.trim().toLowerCase();
+            const statusFilter = document.getElementById("statusFilter").value;
+            const projectFilterVal = document.getElementById("projectFilter").value;
+
+            let filteredTasks = tasks;
+            if (searchQuery) {
+                filteredTasks = filteredTasks.filter(t =>
+                    t.title.toLowerCase().includes(searchQuery) ||
+                    (t.description && t.description.toLowerCase().includes(searchQuery))
+                );
+            }
+            if (statusFilter) {
+                filteredTasks = filteredTasks.filter(t => t.status === statusFilter);
+            }
+            if (projectFilterVal) {
+                filteredTasks = filteredTasks.filter(t => t.project && t.project.id == projectFilterVal);
+            }
+
+            const tbody = document.getElementById("tasksTableBody");
+            tbody.innerHTML = "";
+
+            if (filteredTasks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Không tìm thấy công việc phù hợp.</td></tr>`;
+                return;
+            }
+
+            filteredTasks.forEach(t => {
+                const teamName = t.assignedTeam ? t.assignedTeam.name : "N/A";
+                const projectName = t.project ? t.project.name : '<span style="color:var(--text-muted);">Không thuộc dự án</span>';
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>#${t.id}</strong></td>
+                    <td>
+                        <strong style="color:var(--text-primary);">${t.title}</strong>
+                        <br><small style="color:var(--text-secondary);">${t.description || "N/A"}</small>
+                    </td>
+                    <td>${projectName}</td>
+                    <td><span class="badge badge-doing">${teamName}</span></td>
+                    <td><span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></td>
+                    <td class="action-buttons">
+                        <button onclick='openEditTaskModal(${JSON.stringify(t)})' class="btn btn-sm btn-warning">Sửa</button>
+                        <button onclick="deleteTask(${t.id}, '${t.title.replace(/'/g, "\\'")}')" class="btn btn-sm btn-danger">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+}
+
+// Bật/tắt Modal tạo công việc lớn
 function openCreateTaskModal() {
+    isEditMode = false;
+    document.getElementById("modalTitle").innerText = "Giao công việc cho Nhóm";
+    document.getElementById("btnSubmitTask").innerText = "Giao việc";
+    document.getElementById("taskId").value = "";
+    document.getElementById("taskTitle").value = "";
+    document.getElementById("taskDescription").value = "";
+
     loadTeamsDropdown();
+    loadProjectsDropdown();
+
     document.getElementById("createTaskModal").classList.add("open");
 }
-function closeCreateTaskModal() {
-    document.getElementById("createTaskModal").classList.remove("open");
-}
-function submitCreateTask() {
-    const title = document.getElementById("taskTitle").value.trim();
-    const description = document.getElementById("taskDescription").value.trim();
-    const teamId = document.getElementById("taskTeamSelect").value;
 
-    if (!title || !teamId) {
-        showAlert("error", "Vui lòng điền đủ thông tin tiêu đề và chọn nhóm!");
+// Bật Modal chỉnh sửa công việc lớn
+function openEditTaskModal(task) {
+    if (task.status === "APPROVED") {
+        showAlert("error", "Không thể chỉnh sửa công việc đã hoàn thành!");
         return;
     }
 
-    fetchWithAuth("/api/admin/tasks", {
-        method: "POST",
-        body: JSON.stringify({ title, description, teamId })
-    })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Giao việc thành công!");
-            closeCreateTaskModal();
-            loadBossTasks();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+    isEditMode = true;
+    document.getElementById("modalTitle").innerText = "Chỉnh sửa công việc lớn";
+    document.getElementById("btnSubmitTask").innerText = "Lưu thay đổi";
+
+    document.getElementById("taskId").value = task.id;
+    document.getElementById("taskTitle").value = task.title;
+    document.getElementById("taskDescription").value = task.description || "";
+
+    loadTeamsDropdown();
+    loadProjectsDropdown(task.project ? task.project.id : "");
+
+    setTimeout(() => {
+        document.getElementById("taskTeamSelect").value = task.assignedTeam ? task.assignedTeam.id : "";
+    }, 200);
+
+    document.getElementById("createTaskModal").classList.add("open");
 }
 
-// Duyệt Báo cáo
+function closeCreateTaskModal() {
+    document.getElementById("createTaskModal").classList.remove("open");
+}
+
+// Gửi Form Giao việc / Lưu thay đổi việc
+function submitCreateTask() {
+    const taskId = document.getElementById("taskId").value;
+    const title = document.getElementById("taskTitle").value.trim();
+    const description = document.getElementById("taskDescription").value.trim();
+    const teamId = document.getElementById("taskTeamSelect").value;
+    const projectId = document.getElementById("taskProjectSelect").value;
+
+    if (!title || !teamId) {
+        showAlert("error", "Vui lòng điền đủ thông tin tiêu đề và chọn nhóm nhận việc!");
+        return;
+    }
+
+    const payload = {
+        title,
+        description,
+        teamId: parseInt(teamId),
+        projectId: projectId ? parseInt(projectId) : null
+    };
+
+    let url = "/api/admin/tasks";
+    let method = "POST";
+
+    if (isEditMode) {
+        url += "/" + taskId;
+        method = "PUT";
+    }
+
+    fetchWithAuth(url, {
+        method: method,
+        body: JSON.stringify(payload)
+    })
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", isEditMode ? "Cập nhật công việc thành công!" : "Giao việc thành công!");
+                closeCreateTaskModal();
+                loadBossTasks();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
+}
+
+// Xóa công việc lớn
+function deleteTask(id, title) {
+    if (confirm(`Bạn có chắc muốn xóa công việc lớn "${title}" không? Toàn bộ công việc con thuộc nó cũng sẽ bị xóa.`)) {
+        fetchWithAuth(`/api/admin/tasks/${id}`, {
+            method: "DELETE"
+        })
+            .then(async res => {
+                if (res.ok) {
+                    showAlert("success", "Đã xóa công việc lớn thành công!");
+                    loadBossTasks();
+                } else {
+                    const err = await res.text();
+                    showAlert("error", "Không thể xóa: " + err);
+                }
+            });
+    }
+}
+
+// Sếp review báo cáo của nhóm nộp lên
 let activeReviewTaskId = null;
 function openReviewModal(taskId, title, report) {
     activeReviewTaskId = taskId;
@@ -319,21 +451,21 @@ function submitReview(isApprove) {
         method: "PUT",
         body: JSON.stringify({ feedback })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", isApprove ? "Đã duyệt hoàn thành công việc!" : "Đã từ chối báo cáo công việc!");
-            closeReviewModal();
-            loadDashboardStats();
-            loadPendingReports();
-            loadAllTasks();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", isApprove ? "Đã duyệt hoàn thành công việc!" : "Đã từ chối báo cáo công việc!");
+                closeReviewModal();
+                loadDashboardStats();
+                loadPendingReports();
+                loadAllTasks();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Xem việc con (Subtasks)
+// Hiển thị việc con (Subtasks) trong Modal của Admin
 function openSubtasksModal(parentId) {
     fetchWithAuth(`/api/admin/tasks/${parentId}/subtasks`)
         .then(res => res.json())
@@ -363,13 +495,15 @@ function closeSubtasksModal() {
     document.getElementById("subtasksModal").classList.remove("open");
 }
 
-// Tiện ích hiển thị Alert
+// =========================================================================
+// SECTION D: TIỆN ÍCH DÙNG CHUNG
+// =========================================================================
 function showAlert(type, msg) {
     const alertBox = document.getElementById("alertBox");
     alertBox.className = "alert-box " + type;
     alertBox.innerText = msg;
-    
-    // Tự động ẩn sau 3 giây
+
+    // Tự động ẩn thông báo sau 3 giây
     setTimeout(() => {
         alertBox.style.display = "none";
     }, 3000);

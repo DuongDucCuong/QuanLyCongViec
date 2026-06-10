@@ -90,4 +90,30 @@ public class LeaderTaskController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // THÊM API CẬP NHẬT CÔNG VIỆC CON (PUT)
+    @PutMapping("/subtask/{id}")
+    public ResponseEntity<?> updateSubtask(@PathVariable Integer id, @RequestBody Map<String, Object> request) {
+        try {
+            String title = (String) request.get("title");
+            String description = (String) request.get("description");
+            String assignedTo = (String) request.get("assignedTo");
+
+            Task subtask = taskService.updateSubtask(id, title, description, assignedTo);
+            return ResponseEntity.ok(subtask);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // THÊM API XÓA CÔNG VIỆC CON (DELETE)
+    @DeleteMapping("/subtask/{id}")
+    public ResponseEntity<?> deleteSubtask(@PathVariable Integer id) {
+        try {
+            taskService.deleteSubtask(id);
+            return ResponseEntity.ok("Xóa công việc con thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

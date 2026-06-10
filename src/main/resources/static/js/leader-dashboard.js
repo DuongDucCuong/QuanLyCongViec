@@ -1,4 +1,3 @@
-// Khởi chạy khi tải trang
 document.addEventListener("DOMContentLoaded", function() {
     const path = window.location.pathname;
 
@@ -15,11 +14,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// ==========================================
-// 1. TẢI DỮ LIỆU ĐỔ VÀO VIEW
-// ==========================================
-
-// Tải số liệu thống kê Dashboard
 function loadLeaderDashboardStats() {
     fetchWithAuth("/api/leader/teams")
         .then(res => res.json())
@@ -33,8 +27,7 @@ function loadLeaderDashboardStats() {
         .then(res => res.json())
         .then(tasks => {
             document.getElementById("statTeamTasks").innerText = tasks.length;
-            
-            // Đếm số lượng việc con của các task lớn này đang chờ duyệt (SUBMITTED)
+
             let pendingSubtaskCount = 0;
             let promises = tasks.map(t => {
                 return fetchWithAuth(`/api/leader/tasks/${t.id}/subtasks`)
@@ -50,7 +43,6 @@ function loadLeaderDashboardStats() {
         });
 }
 
-// Tải danh sách công việc lớn (leader/dashboard.html)
 function loadLeaderBigTasks() {
     fetchWithAuth("/api/leader/tasks")
         .then(res => res.json())
@@ -77,7 +69,6 @@ function loadLeaderBigTasks() {
         });
 }
 
-// Tải danh sách báo cáo việc con của nhân viên (leader/dashboard.html)
 function loadMemberPendingReports() {
     fetchWithAuth("/api/leader/tasks")
         .then(res => res.json())
@@ -116,7 +107,6 @@ function loadMemberPendingReports() {
         });
 }
 
-// Tải danh sách thành viên nhóm (leader/team-manage.html)
 function loadLeaderTeamInfo() {
     fetchWithAuth("/api/leader/teams")
         .then(res => res.json())
@@ -150,7 +140,6 @@ function loadLeaderTeamInfo() {
         });
 }
 
-// Tải bảng chọn việc lớn (leader/task-report.html)
 function loadLeaderBigTasksSelector() {
     fetchWithAuth("/api/leader/tasks")
         .then(res => res.json())
@@ -178,10 +167,6 @@ function loadLeaderBigTasksSelector() {
         });
 }
 
-// ==========================================
-// 2. PHÂN VIỆC CON & NỘP BÁO CÁO
-// ==========================================
-
 let activeParentTaskId = null;
 
 function selectParentTask(parentId, parentTitle) {
@@ -191,7 +176,6 @@ function selectParentTask(parentId, parentTitle) {
     loadSubtasksList(parentId);
 }
 
-// Tải danh sách việc con
 function loadSubtasksList(parentId) {
     fetchWithAuth(`/api/leader/tasks/${parentId}/subtasks`)
         .then(res => res.json())
@@ -200,13 +184,16 @@ function loadSubtasksList(parentId) {
             tbody.innerHTML = "";
 
             if (subtasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); padding:1.5rem;">Chưa có việc con nào. Hãy bấm nút giao việc con ở trên!</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding:1.5rem;">Chưa có việc con nào. Hãy bấm nút giao việc con ở trên!</td></tr>`;
                 return;
             }
 
             subtasks.forEach(s => {
                 const employeeName = s.assignedTo ? s.assignedTo.username : "Chưa nhận";
                 const feedbackText = s.feedback || "<em>Chưa có</em>";
+
+                const disableActions = s.status === "APPROVED" ? "disabled style='opacity:0.5; cursor:not-allowed;'" : "";
+
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><strong>${s.title}</strong></td>
@@ -214,17 +201,16 @@ function loadSubtasksList(parentId) {
                     <td>${employeeName}</td>
                     <td><span class="badge badge-${s.status.toLowerCase()}">${s.status}</span></td>
                     <td>${feedbackText}</td>
+                    <td class="action-buttons">
+                        <button onclick='openEditSubtaskModal(${JSON.stringify(s)})' class="btn btn-sm btn-warning" ${disableActions}>Sửa</button>
+                        <button onclick="deleteSubtask(${s.id})" class="btn btn-sm btn-danger" ${disableActions}>Xóa</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         });
 }
 
-// ==========================================
-// 3. DROPDOWNS & MODALS
-// ==========================================
-
-// Tải danh sách nhân viên tự do
 function loadAvailableMembersDropdown() {
     fetchWithAuth("/api/leader/teams/available-members")
         .then(res => res.json())
@@ -237,7 +223,6 @@ function loadAvailableMembersDropdown() {
         });
 }
 
-// Tải danh sách nhân viên trong nhóm của Leader
 function loadTeamMembersDropdown() {
     fetchWithAuth("/api/leader/teams")
         .then(res => res.json())
@@ -252,7 +237,6 @@ function loadTeamMembersDropdown() {
         });
 }
 
-// Modal Thêm nhân viên
 function openAddMemberModal() {
     loadAvailableMembersDropdown();
     document.getElementById("addMemberModal").classList.add("open");
@@ -271,26 +255,48 @@ function submitAddMember() {
         method: "PUT",
         body: JSON.stringify({ memberUsername })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Đã thêm nhân viên vào nhóm!");
-            closeAddMemberModal();
-            loadLeaderTeamInfo();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", "Đã thêm nhân viên vào nhóm!");
+                closeAddMemberModal();
+                loadLeaderTeamInfo();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Modal Giao việc con
 function openCreateSubtaskModal() {
+    isEditSubtaskMode = false;
+    document.getElementById("subtaskTitle").value = "";
+    document.getElementById("subtaskDescription").value = "";
     loadTeamMembersDropdown();
     document.getElementById("createSubtaskModal").classList.add("open");
 }
 function closeCreateSubtaskModal() {
     document.getElementById("createSubtaskModal").classList.remove("open");
 }
+
+let isEditSubtaskMode = false;
+let editingSubtaskId = null;
+
+function openEditSubtaskModal(subtask) {
+    isEditSubtaskMode = true;
+    editingSubtaskId = subtask.id;
+
+    document.getElementById("subtaskTitle").value = subtask.title;
+    document.getElementById("subtaskDescription").value = subtask.description || "";
+
+    loadTeamMembersDropdown();
+
+    setTimeout(() => {
+        document.getElementById("subtaskEmployeeSelect").value = subtask.assignedTo ? subtask.assignedTo.username : "";
+    }, 200);
+
+    document.getElementById("createSubtaskModal").classList.add("open");
+}
+
 function submitCreateSubtask() {
     const title = document.getElementById("subtaskTitle").value.trim();
     const description = document.getElementById("subtaskDescription").value.trim();
@@ -301,23 +307,53 @@ function submitCreateSubtask() {
         return;
     }
 
-    fetchWithAuth("/api/leader/tasks/subtask", {
-        method: "POST",
-        body: JSON.stringify({ title, description, parentId: activeParentTaskId, assignedTo })
+    const payload = { title, description, assignedTo };
+
+    let url = "/api/leader/tasks/subtask";
+    let method = "POST";
+
+    if (isEditSubtaskMode) {
+        url += "/" + editingSubtaskId;
+        method = "PUT";
+    } else {
+        payload.parentId = activeParentTaskId;
+    }
+
+    fetchWithAuth(url, {
+        method: method,
+        body: JSON.stringify(payload)
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Giao việc con thành công!");
-            closeCreateSubtaskModal();
-            loadSubtasksList(activeParentTaskId);
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", isEditSubtaskMode ? "Đã cập nhật việc con!" : "Giao việc con thành công!");
+                closeCreateSubtaskModal();
+                isEditSubtaskMode = false;
+                editingSubtaskId = null;
+                loadSubtasksList(activeParentTaskId);
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Modal Duyệt báo cáo nhân viên (Leader)
+function deleteSubtask(subtaskId) {
+    if (confirm("Bạn có chắc chắn muốn xóa công việc con này không?")) {
+        fetchWithAuth(`/api/leader/tasks/subtask/${subtaskId}`, {
+            method: "DELETE"
+        })
+            .then(async res => {
+                if (res.ok) {
+                    showAlert("success", "Đã xóa công việc con thành công!");
+                    loadSubtasksList(activeParentTaskId);
+                } else {
+                    const err = await res.text();
+                    showAlert("error", "Không thể xóa: " + err);
+                }
+            });
+    }
+}
+
 let activeSubtaskId = null;
 function openReviewSubtaskModal(subtaskId, title, report) {
     activeSubtaskId = subtaskId;
@@ -337,21 +373,20 @@ function submitSubtaskReview(isApprove) {
         method: "PUT",
         body: JSON.stringify({ feedback })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", isApprove ? "Đã duyệt hoàn thành việc con!" : "Đã từ chối và yêu cầu sửa đổi!");
-            closeReviewSubtaskModal();
-            loadLeaderDashboardStats();
-            loadLeaderBigTasks();
-            loadMemberPendingReports();
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", isApprove ? "Đã duyệt hoàn thành việc con!" : "Đã từ chối và yêu cầu sửa đổi!");
+                closeReviewSubtaskModal();
+                loadLeaderDashboardStats();
+                loadLeaderBigTasks();
+                loadMemberPendingReports();
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Modal Báo cáo lên Sếp
 function openSubmitTeamReportModal() {
     document.getElementById("teamReportContent").value = "";
     document.getElementById("submitTeamReportModal").classList.add("open");
@@ -370,25 +405,23 @@ function submitTeamReport() {
         method: "PUT",
         body: JSON.stringify({ reportContent })
     })
-    .then(async res => {
-        if (res.ok) {
-            showAlert("success", "Đã nộp báo cáo nhóm lên Sếp!");
-            closeSubmitTeamReportModal();
-            loadLeaderBigTasksSelector();
-            document.getElementById("subtaskManagementSection").style.display = "none";
-        } else {
-            const err = await res.text();
-            showAlert("error", "Lỗi: " + err);
-        }
-    });
+        .then(async res => {
+            if (res.ok) {
+                showAlert("success", "Đã nộp báo cáo nhóm lên Sếp!");
+                closeSubmitTeamReportModal();
+                loadLeaderBigTasksSelector();
+                document.getElementById("subtaskManagementSection").style.display = "none";
+            } else {
+                const err = await res.text();
+                showAlert("error", "Lỗi: " + err);
+            }
+        });
 }
 
-// Tiện ích hiển thị Alert
 function showAlert(type, msg) {
     const alertBox = document.getElementById("alertBox");
     alertBox.className = "alert-box " + type;
     alertBox.innerText = msg;
-    
     setTimeout(() => {
         alertBox.style.display = "none";
     }, 3000);

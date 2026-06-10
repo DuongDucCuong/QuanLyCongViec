@@ -1,0 +1,24 @@
+D: Java/ QuanLyCongViec bạn đọc dự án này của tôi và tiếp theo phát triển thêm như:
+├── Quản lý người dùngx
+├── Phân quyền x
+├── Quản lý dự ánx
+├── Quản lý công việc
+├── Giao việc
+├── Theo dõi tiến độ
+├── Bình luận
+├── Upload file
+├── Thông báo
+├── Dashboard thống kê
+└── Xuất báo cáo PDF/Excel
+làm từng chức năng một tôi tự tạo và coppy vào dự án của tôi
+A. Backend (Nằm trong thư mục src/main/java/com/quanlycongviec/)
+Nó được chia thành các thư mục con (các Package) theo cấu trúc 4 tầng chuẩn:
+
+📂 entity/ (Thực thể): Định nghĩa các bảng trong database.
+Ví dụ: User.java (bảng người dùng), Project.java (bảng dự án), Task.java (bảng công việc). Mỗi file ở đây tương ứng với 1 bảng trong Oracle DB.
+📂 repository/ (Kho dữ liệu): Nơi viết các câu lệnh truy vấn SQL (Spring Boot tự động làm phần lớn).
+Ví dụ: ProjectRepository.java dùng để chạy các lệnh như save (lưu dự án), delete (xóa dự án), findAll (lấy hết dự án).
+📂 service/ và service/impl/ (Nghiệp vụ): Nơi xử lý logic thực tế của dự án.
+Ví dụ: Khi xóa dự án, phải kiểm tra xem dự án có công việc nào không. Logic kiểm tra đó được viết ở đây.
+📂 controller/ (Bộ điều hướng): Nơi tiếp nhận yêu cầu từ trình duyệt.
+Ví dụ: @GetMapping("/admin/users") để mở trang quản lý thành viên; hoặc @PostMapping("/api/admin/projects") để nhận dữ liệu tạo dự án mới từ giao diện.
