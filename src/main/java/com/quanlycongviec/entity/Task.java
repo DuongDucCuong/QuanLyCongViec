@@ -45,11 +45,11 @@ public class Task {
     @JsonIgnoreProperties({"parentTask", "assignedTo", "assignedTeam", "createdBy"})
     private Task parentTask;
 
-    // Dự án mà công việc này thuộc về
-    @ManyToOne
-    @JoinColumn(name = "project_id")
-    @JsonIgnoreProperties("tasks")
-    private Project project;
+    @Column(name = "due_date")
+    private java.time.LocalDate dueDate;
+
+    @Column(nullable = false)
+    private String priority = "MEDIUM"; // Mặc định là MEDIUM
 
     @Column(name = "report_content", columnDefinition = "CLOB")
     private String reportContent;
@@ -67,8 +67,10 @@ public class Task {
 
     // Getters và Setters
 
-    public Project getProject() { return project; }
-    public void setProject(Project project) { this.project = project; }
+    public java.time.LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(java.time.LocalDate dueDate) { this.dueDate = dueDate; }
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }

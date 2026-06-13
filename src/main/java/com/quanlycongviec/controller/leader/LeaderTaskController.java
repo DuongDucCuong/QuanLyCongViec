@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,14 @@ public class LeaderTaskController {
             Integer parentId = Integer.parseInt(request.get("parentId").toString());
             String assignedTo = (String) request.get("assignedTo");
 
-            Task subtask = taskService.createSubtask(title, description, parentId, assignedTo, principal.getName());
+            // Đọc thêm Hạn chót & Độ ưu tiên việc con
+            LocalDate dueDate = null;
+            if (request.get("dueDate") != null && !request.get("dueDate").toString().isEmpty()) {
+                dueDate = LocalDate.parse(request.get("dueDate").toString());
+            }
+            String priority = (String) request.get("priority");
+
+            Task subtask = taskService.createSubtask(title, description, parentId, assignedTo, dueDate, priority, principal.getName());
             return ResponseEntity.ok(subtask);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -91,7 +99,6 @@ public class LeaderTaskController {
         }
     }
 
-    // THÊM API CẬP NHẬT CÔNG VIỆC CON (PUT)
     @PutMapping("/subtask/{id}")
     public ResponseEntity<?> updateSubtask(@PathVariable Integer id, @RequestBody Map<String, Object> request) {
         try {
@@ -99,14 +106,19 @@ public class LeaderTaskController {
             String description = (String) request.get("description");
             String assignedTo = (String) request.get("assignedTo");
 
-            Task subtask = taskService.updateSubtask(id, title, description, assignedTo);
+            LocalDate dueDate = null;
+            if (request.get("dueDate") != null && !request.get("dueDate").toString().isEmpty()) {
+                dueDate = LocalDate.parse(request.get("dueDate").toString());
+            }
+            String priority = (String) request.get("priority");
+
+            Task subtask = taskService.updateSubtask(id, title, description, assignedTo, dueDate, priority);
             return ResponseEntity.ok(subtask);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // THÊM API XÓA CÔNG VIỆC CON (DELETE)
     @DeleteMapping("/subtask/{id}")
     public ResponseEntity<?> deleteSubtask(@PathVariable Integer id) {
         try {

@@ -1,10 +1,8 @@
 package com.quanlycongviec.service.impl;
 
-import com.quanlycongviec.entity.Project;
 import com.quanlycongviec.entity.Task;
 import com.quanlycongviec.entity.Team;
 import com.quanlycongviec.entity.User;
-import com.quanlycongviec.repository.ProjectRepository;
 import com.quanlycongviec.repository.TaskRepository;
 import com.quanlycongviec.repository.TeamRepository;
 import com.quanlycongviec.repository.UserRepository;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,11 +27,8 @@ public class TaskServiceImpl implements TaskService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ProjectRepository projectRepository; // Tiêm repository để truy vấn Dự án
-
     @Override
-    public Task createBossTask(String title, String description, Integer teamId, Integer projectId, String creatorUsername) {
+    public Task createBossTask(String title, String description, Integer teamId, LocalDate dueDate, String priority, String creatorUsername) {
         User creator = userRepository.findByUsername(creatorUsername)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người tạo!"));
 
@@ -44,18 +40,14 @@ public class TaskServiceImpl implements TaskService {
         task.setAssignedTo(team.getLeader());
         task.setStatus("PENDING");
 
-        // Gán dự án nếu có
-        if (projectId != null) {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dự án!"));
-            task.setProject(project);
-        }
+        task.setDueDate(dueDate);
+        task.setPriority(priority != null ? priority : "MEDIUM");
 
         return taskRepository.save(task);
     }
 
     @Override
-    public Task createSubtask(String title, String description, Integer parentId, String assignedToUsername, String creatorUsername) {
+    public Task createSubtask(String title, String description, Integer parentId, String assignedToUsername, LocalDate dueDate, String priority, String creatorUsername) {
         User creator = userRepository.findByUsername(creatorUsername)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người giao việc!"));
 
@@ -69,6 +61,9 @@ public class TaskServiceImpl implements TaskService {
         subtask.setParentTask(parentTask);
         subtask.setAssignedTo(assignedTo);
         subtask.setStatus("PENDING");
+
+        subtask.setDueDate(dueDate);
+        subtask.setPriority(priority != null ? priority : "MEDIUM");
 
         if ("PENDING".equals(parentTask.getStatus())) {
             parentTask.setStatus("DOING");
@@ -157,10 +152,8 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy công việc!"));
     }
 
-    // TRIỂN KHAI CÁC PHƯƠNG THỨC CRUD MỚI:
-
     @Override
-    public Task updateBossTask(Integer taskId, String title, String description, Integer teamId, Integer projectId) {
+    public Task updateBossTask(Integer taskId, String title, String description, Integer teamId, LocalDate dueDate, String priority) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy công việc!"));
 
@@ -170,20 +163,14 @@ public class TaskServiceImpl implements TaskService {
 
         task.setTitle(title);
         task.setDescription(description);
+        task.setDueDate(dueDate);
+        task.setPriority(priority != null ? priority : "MEDIUM");
 
         if (teamId != null) {
             Team team = teamRepository.findById(teamId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Nhóm!"));
             task.setAssignedTeam(team);
             task.setAssignedTo(team.getLeader());
-        }
-
-        if (projectId != null) {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dự án!"));
-            task.setProject(project);
-        } else {
-            task.setProject(null);
         }
 
         return taskRepository.save(task);
@@ -194,7 +181,6 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy công việc!"));
 
-        // Xóa tất cả các công việc con trước để tránh lỗi khóa ngoại trong Oracle DB
         List<Task> subtasks = taskRepository.findByParentTask(task);
         if (subtasks != null && !subtasks.isEmpty()) {
             taskRepository.deleteAll(subtasks);
@@ -204,7 +190,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task updateSubtask(Integer subtaskId, String title, String description, String assignedToUsername) {
+    public Task updateSubtask(Integer subtaskId, String title, String description, String assignedToUsername, LocalDate dueDate, String priority) {
         Task subtask = taskRepository.findById(subtaskId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy công việc con!"));
 
@@ -214,6 +200,8 @@ public class TaskServiceImpl implements TaskService {
 
         subtask.setTitle(title);
         subtask.setDescription(description);
+        subtask.setDueDate(dueDate);
+        subtask.setPriority(priority != null ? priority : "MEDIUM");
 
         if (assignedToUsername != null && !assignedToUsername.isEmpty()) {
             User assignedTo = userRepository.findByUsername(assignedToUsername)

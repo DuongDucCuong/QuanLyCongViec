@@ -1,20 +1,12 @@
-// Khởi chạy khi tải trang
 document.addEventListener("DOMContentLoaded", function() {
-    const path = window.location.pathname;
-
-    if (path.includes("/member/dashboard")) {
-        loadMemberStats();
-        loadMemberTasks();
-    } else if (path.includes("/member/task-report")) {
-        loadMemberTaskHistory();
+    const role = localStorage.getItem("role");
+    if (role !== "ROLE_USER") {
+        return;
     }
+    loadMemberStats();
+    loadMemberTasks();
 });
 
-// ==========================================
-// 1. TẢI DỮ LIỆU ĐỔ VÀO VIEW
-// ==========================================
-
-// Tải số liệu thống kê Dashboard
 function loadMemberStats() {
     fetchWithAuth("/api/member/tasks")
         .then(res => res.json())
@@ -25,7 +17,6 @@ function loadMemberStats() {
         });
 }
 
-// Tải danh sách công việc cá nhân
 function loadMemberTasks() {
     fetchWithAuth("/api/member/tasks")
         .then(res => res.json())
@@ -42,7 +33,6 @@ function loadMemberTasks() {
                 const creatorName = t.createdBy ? t.createdBy.username : "N/A";
                 const tr = document.createElement("tr");
 
-                // Tạo các nút hành động tùy theo trạng thái
                 let actionBtn = "";
                 if (t.status === "PENDING") {
                     actionBtn = `<button onclick="acceptTask(${t.id})" class="btn btn-primary btn-sm">⚡ Nhận việc (Start)</button>`;
@@ -65,40 +55,6 @@ function loadMemberTasks() {
         });
 }
 
-// Tải lịch sử báo cáo và nhận xét
-function loadMemberTaskHistory() {
-    fetchWithAuth("/api/member/tasks")
-        .then(res => res.json())
-        .then(tasks => {
-            const tbody = document.getElementById("memberTaskHistoryTable");
-            tbody.innerHTML = "";
-
-            if (tasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Bạn chưa có lịch sử công việc nào.</td></tr>`;
-                return;
-            }
-
-            tasks.forEach(t => {
-                const report = t.reportContent || "<em>Chưa gửi báo cáo</em>";
-                const feedback = t.feedback || "<em>Chưa có nhận xét</em>";
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td><strong>#${t.id}</strong></td>
-                    <td><strong>${t.title}</strong></td>
-                    <td>${report}</td>
-                    <td><span style="color: var(--primary); font-weight: 500;">${feedback}</span></td>
-                    <td><span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-}
-
-// ==========================================
-// 2. HÀNH ĐỘNG NHẬN VIỆC & NỘP BÁO CÁO
-// ==========================================
-
-// Nhận việc (Đổi trạng thái sang DOING)
 function acceptTask(taskId) {
     fetchWithAuth(`/api/member/tasks/${taskId}/accept`, {
         method: "PUT"
@@ -115,18 +71,17 @@ function acceptTask(taskId) {
     });
 }
 
-// Mở modal báo cáo
 function openSubmitReportModal(taskId, title) {
     document.getElementById("reportSubtaskId").value = taskId;
     document.getElementById("reportSubtaskTitle").value = title;
     document.getElementById("reportContentInput").value = "";
     document.getElementById("submitSubtaskReportModal").classList.add("open");
 }
+
 function closeSubmitSubtaskReportModal() {
     document.getElementById("submitSubtaskReportModal").classList.remove("open");
 }
 
-// Gửi báo cáo
 function submitSubtaskReport() {
     const taskId = document.getElementById("reportSubtaskId").value;
     const reportContent = document.getElementById("reportContentInput").value.trim();
@@ -153,12 +108,11 @@ function submitSubtaskReport() {
     });
 }
 
-// Tiện ích hiển thị Alert
 function showAlert(type, msg) {
     const alertBox = document.getElementById("alertBox");
     alertBox.className = "alert-box " + type;
     alertBox.innerText = msg;
-    
+    alertBox.style.display = "block";
     setTimeout(() => {
         alertBox.style.display = "none";
     }, 3000);

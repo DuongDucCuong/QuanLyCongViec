@@ -43,7 +43,10 @@ public class SecurityConfig {
                                 "/leader/**",
                                 "/member/**",
                                 "/css/**",
-                                "/js/**"
+                                "/js/**",
+                                "/uploads/**",
+
+                                "/error"
                         ).permitAll()
                         // Tất cả các API REST và các đường dẫn khác bắt buộc phải đăng nhập bằng JWT
                         .anyRequest().authenticated()

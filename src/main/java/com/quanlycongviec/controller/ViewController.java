@@ -52,9 +52,8 @@ public class ViewController {
     }
 
     @GetMapping("/admin/users")
-    public String adminUsers() { return "admin/users";} // Trả về template templates/admin/users.html
+    public String adminUsers() { return "admin/users";}
 
-    @GetMapping("/admin/projects")
-    public String adminProjects() { return "admin/projects"; }// Trả về template templates/admin/projects.html
-
+    @GetMapping("/admin/users/detail")
+    public String adminUserDetail() {return "admin/user-detail"; }// Sẽ khớp với templates/admin/user-detail.html
 }

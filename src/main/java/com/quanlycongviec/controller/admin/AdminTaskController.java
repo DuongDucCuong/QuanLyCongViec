@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -26,13 +27,13 @@ public class AdminTaskController {
             String description = (String) request.get("description");
             Integer teamId = Integer.parseInt(request.get("teamId").toString());
 
-            // Đọc thêm projectId
-            Integer projectId = null;
-            if (request.get("projectId") != null && !request.get("projectId").toString().isEmpty()) {
-                projectId = Integer.parseInt(request.get("projectId").toString());
+            LocalDate dueDate = null;
+            if (request.get("dueDate") != null && !request.get("dueDate").toString().isEmpty()) {
+                dueDate = LocalDate.parse(request.get("dueDate").toString());
             }
+            String priority = (String) request.get("priority");
 
-            Task task = taskService.createBossTask(title, description, teamId, projectId, principal.getName());
+            Task task = taskService.createBossTask(title, description, teamId, dueDate, priority, principal.getName());
             return ResponseEntity.ok(task);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -71,7 +72,6 @@ public class AdminTaskController {
         return ResponseEntity.ok(taskService.getSubtasks(id));
     }
 
-    // THÊM API CẬP NHẬT CÔNG VIỆC LỚN (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBossTask(@PathVariable Integer id, @RequestBody Map<String, Object> request) {
         try {
@@ -79,19 +79,19 @@ public class AdminTaskController {
             String description = (String) request.get("description");
             Integer teamId = Integer.parseInt(request.get("teamId").toString());
 
-            Integer projectId = null;
-            if (request.get("projectId") != null && !request.get("projectId").toString().isEmpty()) {
-                projectId = Integer.parseInt(request.get("projectId").toString());
+            LocalDate dueDate = null;
+            if (request.get("dueDate") != null && !request.get("dueDate").toString().isEmpty()) {
+                dueDate = LocalDate.parse(request.get("dueDate").toString());
             }
+            String priority = (String) request.get("priority");
 
-            Task task = taskService.updateBossTask(id, title, description, teamId, projectId);
+            Task task = taskService.updateBossTask(id, title, description, teamId, dueDate, priority);
             return ResponseEntity.ok(task);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // THÊM API XÓA CÔNG VIỆC LỚN (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBossTask(@PathVariable Integer id) {
         try {

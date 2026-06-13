@@ -55,6 +55,7 @@ function loadUsers() {
                     <td>${roleBadge}</td>
                     <td>${teamName}</td>
                     <td class="action-buttons">
+                        <button onclick="viewUserDetail(${user.id})" class="btn btn-sm btn-primary" style="background-color: var(--info); border-color: var(--info);">Chi tiết</button>
                         <button onclick='editUser(${JSON.stringify(user)})' class="btn btn-sm btn-warning">Sửa</button>
                         <button onclick="deleteUser(${user.id}, '${user.username}')" class="btn btn-sm btn-danger">Xóa</button>
                     </td>
@@ -207,4 +208,8 @@ function showAlert(message, type = "success") {
     setTimeout(() => {
         alertBox.style.display = "none";
     }, 4000);
+}
+
+function viewUserDetail(id) {
+    window.location.href = `/admin/users/detail?id=${id}`;
 }

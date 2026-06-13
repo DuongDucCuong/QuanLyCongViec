@@ -2,12 +2,15 @@ package com.quanlycongviec.service;
 
 import com.quanlycongviec.entity.Task;
 import java.util.List;
+import java.time.LocalDate;
 
 public interface TaskService {
-    // Thêm tham số Integer projectId để liên kết dự án khi giao việc lớn
-    Task createBossTask(String title, String description, Integer teamId, Integer projectId, String creatorUsername);
+    // 1. Loại bỏ projectId khi Sếp tạo việc lớn
+    Task createBossTask(String title, String description, Integer teamId, LocalDate dueDate, String priority, String creatorUsername);
 
-    Task createSubtask(String title, String description, Integer parentId, String assignedToUsername, String creatorUsername);
+    // 2. Tạo việc con
+    Task createSubtask(String title, String description, Integer parentId, String assignedToUsername, LocalDate dueDate, String priority, String creatorUsername);
+
     Task updateTaskStatus(Integer taskId, String status, String username);
     Task submitReport(Integer taskId, String reportContent, String username);
     Task approveReport(Integer taskId, String feedback, String username);
@@ -18,9 +21,13 @@ public interface TaskService {
     List<Task> getSubtasks(Integer parentId);
     Task getTaskById(Integer id);
 
-    // BỔ SUNG 4 PHƯƠNG THỨC CRUD MỚI:
-    Task updateBossTask(Integer taskId, String title, String description, Integer teamId, Integer projectId);
+    // 3. Loại bỏ projectId khi Sếp sửa việc lớn
+    Task updateBossTask(Integer taskId, String title, String description, Integer teamId, LocalDate dueDate, String priority);
+
     void deleteBossTask(Integer taskId);
-    Task updateSubtask(Integer subtaskId, String title, String description, String assignedToUsername);
+
+    // 4. Sửa việc con
+    Task updateSubtask(Integer subtaskId, String title, String description, String assignedToUsername, LocalDate dueDate, String priority);
+
     void deleteSubtask(Integer subtaskId);
 }

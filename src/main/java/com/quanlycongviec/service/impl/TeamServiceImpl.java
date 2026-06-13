@@ -54,25 +54,45 @@ public class TeamServiceImpl implements TeamService {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Nhóm!"));
 
+        // NẾU TRUYỀN USERNAME RỖNG HOẶC NULL -> THỰC HIỆN XÓA/GỠ TRƯỞNG NHÓM
+        if (leaderUsername == null || leaderUsername.trim().isEmpty()) {
+            if (team.getLeader() != null) {
+                User oldLeader = team.getLeader();
+                oldLeader.setRole("ROLE_USER"); // Chuyển trưởng nhóm cũ về làm Nhân viên
+                userRepository.save(oldLeader);
+                team.setLeader(null); // Gỡ khỏi nhóm
+            }
+            return teamRepository.save(team);
+        }
+
         User leader = userRepository.findByUsername(leaderUsername)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Trưởng nhóm!"));
 
-        // Cập nhật role của leader
+        // 1. Nếu Trưởng nhóm này đang dẫn dắt nhóm khác, gỡ quyền trưởng nhóm tại nhóm đó ra trước
+        teamRepository.findByLeader(leader).ifPresent(otherTeam -> {
+            if (!otherTeam.getId().equals(teamId)) {
+                otherTeam.setLeader(null);
+                teamRepository.save(otherTeam);
+            }
+        });
+
+        // 2. Cập nhật vai trò và Nhóm mới cho Trưởng nhóm này
         leader.setRole("ROLE_LEADER");
         leader.setTeam(team);
         userRepository.save(leader);
 
-        // Gỡ leader cũ nếu có
+        // 3. Gỡ Trưởng nhóm cũ của nhóm hiện tại (nếu có) chuyển về vai trò Nhân viên bình thường
         if (team.getLeader() != null && !team.getLeader().equals(leader)) {
             User oldLeader = team.getLeader();
-            // Nếu không còn làm leader nhóm nào thì chuyển về USER
             oldLeader.setRole("ROLE_USER");
             userRepository.save(oldLeader);
         }
 
+        // 4. Thiết lập Trưởng nhóm mới cho nhóm hiện tại
         team.setLeader(leader);
         return teamRepository.save(team);
     }
+
 
     @Override
     public Team addMember(Integer teamId, String memberUsername) {

@@ -5,98 +5,92 @@
 </head>
 <body>
 
-    <!-- 1. HEADER FRAGMENT -->
-    <header th:fragment="header(title)" class="top-header">
-        <div class="page-title">
-            <h1 th:text="${title}">Dashboard</h1>
+<!-- 1. HEADER FRAGMENT -->
+<header th:fragment="header(title)" class="top-header">
+    <div class="page-title">
+        <h1 th:text="${title}">Dashboard</h1>
+    </div>
+    <div class="user-profile-nav">
+        <div class="user-info">
+            <span id="headerUsername" class="user-name">Đang tải...</span>
+            <span id="headerRole" class="user-role">Đang tải...</span>
         </div>
-        <div class="user-profile-nav">
-            <div class="user-info">
-                <span id="headerUsername" class="user-name">Đang tải...</span>
-                <span id="headerRole" class="user-role">Đang tải...</span>
-            </div>
-            <div id="headerAvatar" class="avatar-placeholder">U</div>
-            <button onclick="handleLogout()" class="btn-logout">Đăng xuất</button>
-        </div>
-    </header>
+        <div id="headerAvatar" class="avatar-placeholder">U</div>
+        <button onclick="handleLogout()" class="btn-logout">Đăng xuất</button>
+    </div>
+</header>
 
-    <!-- 2. SIDEBAR FRAGMENT -->
-    <aside th:fragment="sidebar(activePage)" class="sidebar">
-        <div class="sidebar-logo">
-            <div class="logo-icon">QL</div>
-            <div class="logo-text">Công Việc</div>
-        </div>
-        
-        <ul class="sidebar-menu">
-            <!-- ADMIN MENU -->
-            <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-dashboard'} ? 'active' : ''">
-                <a href="/admin/dashboard">
-                    <span>📊 Tổng quan</span>
-                </a>
-            </li>
+<!-- 2. SIDEBAR FRAGMENT -->
+<aside th:fragment="sidebar(activePage)" class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">QL</div>
+        <div class="logo-text">Công Việc</div>
+    </div>
 
-            <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-users'} ? 'active' : ''">
-                <a href="/admin/users">
-                    <span>👤 Quản lý thành viên</span>
-                </a>
-            </li>
+    <ul class="sidebar-menu">
+        <!-- ADMIN MENU -->
+        <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-dashboard'} ? 'active' : ''">
+            <a href="/admin/dashboard">
+                <span>📊 Tổng quan</span>
+            </a>
+        </li>
 
-            <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-projects'} ? 'active' : ''">
-                <a href="/admin/projects">
-                    <span>📂 Quản lý dự án</span>
-                </a>
-            </li>
+        <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-users'} ? 'active' : ''">
+            <a href="/admin/users">
+                <span>👤 Quản lý thành viên</span>
+            </a>
+        </li>
 
-            <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-team'} ? 'active' : ''">
-                <a href="/admin/team">
-                    <span>👥 Quản lý nhóm</span>
-                </a>
-            </li>
-            <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-task'} ? 'active' : ''">
-                <a href="/admin/task">
-                    <span>📝 Giao việc nhóm</span>
-                </a>
-            </li>
+        <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-team'} ? 'active' : ''">
+            <a href="/admin/team">
+                <span>👥 Quản lý nhóm</span>
+            </a>
+        </li>
+        <li class="menu-item admin-menu" th:classappend="${activePage == 'admin-task'} ? 'active' : ''">
+            <a href="/admin/task">
+                <span>📝 Giao việc nhóm</span>
+            </a>
+        </li>
 
-            <!-- LEADER MENU -->
-            <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-dashboard'} ? 'active' : ''">
-                <a href="/leader/dashboard">
-                    <span>📊 Tổng quan nhóm</span>
-                </a>
-            </li>
-            <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-team'} ? 'active' : ''">
-                <a href="/leader/team-manage">
-                    <span>👥 Thành viên nhóm</span>
-                </a>
-            </li>
-            <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-task'} ? 'active' : ''">
-                <a href="/leader/task-report">
-                    <span>📝 Giao việc & Duyệt</span>
-                </a>
-            </li>
+        <!-- LEADER MENU -->
+        <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-dashboard'} ? 'active' : ''">
+            <a href="/leader/dashboard">
+                <span>📊 Tổng quan nhóm</span>
+            </a>
+        </li>
+        <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-team'} ? 'active' : ''">
+            <a href="/leader/team-manage">
+                <span>👥 Thành viên nhóm</span>
+            </a>
+        </li>
+        <li class="menu-item leader-menu" th:classappend="${activePage == 'leader-task'} ? 'active' : ''">
+            <a href="/leader/task-report">
+                <span>📝 Giao việc & Duyệt</span>
+            </a>
+        </li>
 
-            <!-- MEMBER MENU -->
-            <li class="menu-item member-menu" th:classappend="${activePage == 'member-dashboard'} ? 'active' : ''">
-                <a href="/member/dashboard">
-                    <span>📋 Việc cá nhân</span>
-                </a>
-            </li>
-            <li class="menu-item member-menu" th:classappend="${activePage == 'member-task'} ? 'active' : ''">
-                <a href="/member/task-report">
-                    <span>📝 Báo cáo công việc</span>
-                </a>
-            </li>
-        </ul>
+        <!-- MEMBER MENU -->
+        <li class="menu-item member-menu" th:classappend="${activePage == 'member-dashboard'} ? 'active' : ''">
+            <a href="/member/dashboard">
+                <span>📋 Việc cá nhân</span>
+            </a>
+        </li>
+        <li class="menu-item member-menu" th:classappend="${activePage == 'member-task'} ? 'active' : ''">
+            <a href="/member/task-report">
+                <span>📝 Báo cáo công việc</span>
+            </a>
+        </li>
+    </ul>
 
-        <div class="sidebar-footer">
-            <span style="font-size: 0.8rem; color: #64748b;">Hệ thống phân cấp v1.0</span>
-        </div>
-    </aside>
+    <div class="sidebar-footer">
+        <span style="font-size: 0.8rem; color: #64748b;">Hệ thống phân cấp v1.0</span>
+    </div>
+</aside>
 
-    <!-- 3. FOOTER FRAGMENT -->
-    <footer th:fragment="footer" style="text-align: center; padding: 1.5rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: auto; font-size: 0.85rem;">
-        &copy; 2026 Hệ thống Quản Lý Công Việc Phân Cấp. Phát triển trên Spring Boot & Oracle.
-    </footer>
+<!-- 3. FOOTER FRAGMENT -->
+<footer th:fragment="footer" style="text-align: center; padding: 1.5rem; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: auto; font-size: 0.85rem;">
+    &copy; 2026 Hệ thống Quản Lý Công Việc Phân Cấp. Phát triển trên Spring Boot & Oracle.
+</footer>
 
 </body>
 </html>

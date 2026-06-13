@@ -74,11 +74,15 @@
                     localStorage.setItem("role", data.role);
 
                     // Phân quyền chuyển hướng thông minh tùy theo vai trò (Role):
+                    // Phân quyền chuyển hướng thông minh tùy theo vai trò (Role):
                     if (data.role === "ROLE_ADMIN") {
                         // Sếp sang trang quản trị của Admin
                         window.location.href = "/admin/dashboard";
+                    } else if (data.role === "ROLE_LEADER") {
+                        // Trưởng nhóm sang trang quản trị của Leader
+                        window.location.href = "/leader/dashboard";
                     } else {
-                        // Trưởng nhóm và Nhân viên sang trang làm việc của Member
+                        // Nhân viên sang trang làm việc của Member
                         window.location.href = "/member/dashboard";
                     }
                 } else {

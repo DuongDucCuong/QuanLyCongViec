@@ -88,17 +88,19 @@ function fetchWithAuth(url, options = {}) {
     if (!options.headers) {
         options.headers = {};
     }
-    
-    // Thêm Token vào Header
+
     options.headers["Authorization"] = "Bearer " + token;
-    
+
     if (!(options.body instanceof FormData) && !options.headers["Content-Type"]) {
         options.headers["Content-Type"] = "application/json";
     }
 
-    return fetch(url, options).then(res => {
+    return fetch(url, options).then(async res => {
         if (res.status === 401 || res.status === 403) {
-            // Token hết hạn hoặc không có quyền truy cập API -> Đăng xuất
+            const errorText = await res.text();
+            // HIỆN THÔNG BÁO ĐỂ BIẾT CHÍNH XÁC LỖI Ở API NÀO
+            alert("Lỗi gọi API: " + url + "\nMã lỗi: " + res.status + "\nChi tiết: " + errorText);
+
             handleLogout();
             throw new Error("Phiên làm việc hết hạn hoặc không có quyền!");
         }
