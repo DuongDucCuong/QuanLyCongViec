@@ -45,7 +45,7 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/uploads/**",
-
+                                "/profile",
                                 "/error"
                         ).permitAll()
                         // Tất cả các API REST và các đường dẫn khác bắt buộc phải đăng nhập bằng JWT

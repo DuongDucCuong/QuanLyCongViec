@@ -15,7 +15,7 @@
             <span id="headerUsername" class="user-name">Đang tải...</span>
             <span id="headerRole" class="user-role">Đang tải...</span>
         </div>
-        <div id="headerAvatar" class="avatar-placeholder">U</div>
+        <div id="headerAvatar" class="avatar-placeholder" style="cursor: pointer;" onclick="window.location.href='/profile'">U</div>
         <button onclick="handleLogout()" class="btn-logout">Đăng xuất</button>
     </div>
 </header>
@@ -80,6 +80,14 @@
                 <span>📝 Báo cáo công việc</span>
             </a>
         </li>
+
+        <!-- MỤC CHUNG CHO MỌI VAI TRÒ -->
+        <li class="menu-item" th:classappend="${activePage == 'profile'} ? 'active' : ''" style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.5rem; margin-top: 0.5rem;">
+            <a href="/profile">
+                <span>👤 Hồ sơ cá nhân</span>
+            </a>
+        </li>
+
     </ul>
 
     <div class="sidebar-footer">
